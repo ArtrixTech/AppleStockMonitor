@@ -1,9 +1,9 @@
 import telegram
-import parser
+import data_parser
 import time
 import random
 
-config = parser.Configuration("config.json")
+config = data_parser.Configuration("config.json")
 BOT_TOKEN = config.get_item("tg_bot_token")
 CHAT_ID = config.get_item("tg_chat_id")
 
@@ -13,7 +13,7 @@ bot = telegram.Bot(token=BOT_TOKEN)
 prev_no_stock = {}
 available_start = {}
 
-partNbrs, partNames, result, displayText = parser.fetch()
+partNbrs, partNames, result, displayText = data_parser.fetch()
 
 
 for partNbr in partNbrs:
@@ -23,7 +23,7 @@ for partNbr in partNbrs:
 while 1:
     try:
 
-        partNbrs, partNames, result, displayText = parser.fetch()
+        partNbrs, partNames, result, displayText = data_parser.fetch()
         print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())), ':')
 
         for partNbr in partNbrs:
