@@ -1,0 +1,11 @@
+{
+    "store_region": "hk",
+    "partNames": [
+        "MLTE3ZA/A",
+        "MLTC3ZA/A",
+        "MLT93ZA/A",
+        "MK7M3ZP/A"
+    ],
+    "tg_bot_token": "12345678:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "tg_chat_id": 233333333
+}
