@@ -10,14 +10,16 @@ CHAT_ID = config.get_item("tg_chat_id")
 
 bot = telegram.Bot(token=BOT_TOKEN)
 
-prev_no_stock = {}
 available_start = {}
 
 partNbrs, partNames, result, displayText = data_parser.fetch()
 
+prev_availibility = {}
+current_availibility = {}
 
 for partNbr in partNbrs:
-    prev_no_stock[partNbr] = True
+    prev_availibility[partNbr] = False
+    current_availibility[partNbr] = False
 
 
 while 1:
@@ -28,29 +30,31 @@ while 1:
 
         for partNbr in partNbrs:
 
-            no_stock = True
+            current_availibility[partNbr] = False
             available_duration = 0
 
             for storeName in result[partNbr]:
                 if result[partNbr][storeName]:
-                    no_stock = False
+                    current_availibility[partNbr] = True
 
-            if prev_no_stock[partNbr] and not no_stock:
+            if not prev_availibility[partNbr] and current_availibility[partNbr]:
                 available_start[partNbr] = time.time()
 
-            if not prev_no_stock[partNbr] and no_stock:
+            if prev_availibility[partNbr] and not current_availibility[partNbr]:
                 available_duration = time.time()-available_start[partNbr]
 
                 msgToSend = time.strftime(
                     '%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n'
                 msgToSend += '🈚️ ' + \
-                    partNames[partNbr]+'已售罄，耗时'+str(available_duration)+'秒。'
+                    partNames[partNbr]+'已售罄，耗时' + \
+                    "%.2f" % available_duration+'秒。'
                 bot.send_message(chat_id=CHAT_ID,
                                  text=msgToSend, parse_mode=telegram.ParseMode.HTML)
 
-            print('  >', partNames[partNbr], '🈚️'if no_stock else '✅')
+            print('  >', partNames[partNbr],
+                  '✅'if current_availibility[partNbr] else '🈚️')
 
-            if prev_no_stock[partNbr] and not no_stock:
+            if not prev_availibility[partNbr] and current_availibility[partNbr]:
 
                 msgToSend = partNames[partNbr]+' 上新啦！✅\n'
                 msgToSend += '----------------------------\n'
@@ -65,12 +69,18 @@ while 1:
                 bot.send_message(chat_id=CHAT_ID,
                                  text=msgToSend, parse_mode=telegram.ParseMode.HTML)
 
-            prev_no_stock[partNbr] = no_stock
+            prev_availibility[partNbr] = current_availibility[partNbr]
 
-        if no_stock:
-            randTime = random.randint(15, 30)
+        fast_refresh = False
+
+        for partNbr in partNbrs:
+            if current_availibility[partNbr]:
+                fast_refresh = True
+
+        if fast_refresh:
+            randTime = 0.5
         else:
-            randTime = 1
+            randTime = random.randint(15, 30)
 
         print('  > Sleep For', randTime, 's')
         time.sleep(randTime)
