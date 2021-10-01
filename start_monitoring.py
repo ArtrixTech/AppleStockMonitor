@@ -80,8 +80,12 @@ while 1:
         if fast_refresh:
             randTime = 0.5
         else:
-            randTime = random.randint(15, 30)
-
+            preSharpTimeRange = 60
+            afterSharpTimeRange = 480
+            if time.time() % 1800 > (1800-preSharpTimeRange) or time.time() % 1800 < afterSharpTimeRange:
+                randTime = random.randint(4, 8)
+            else:
+                randTime = random.randint(15, 30)
         print('  > Sleep For', randTime, 's')
         time.sleep(randTime)
 
