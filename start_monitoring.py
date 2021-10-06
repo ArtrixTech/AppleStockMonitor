@@ -10,12 +10,13 @@ CHAT_ID = config.get_item("tg_chat_id")
 
 bot = telegram.Bot(token=BOT_TOKEN)
 
-available_start = {}
 
 partNbrs, partNames, result, displayText = data_parser.fetch()
 
+available_start = {}
 prev_availibility = {}
 current_availibility = {}
+last_availibility_timestamp = 0
 
 for partNbr in partNbrs:
     prev_availibility[partNbr] = False
@@ -36,6 +37,7 @@ while 1:
             for storeName in result[partNbr]:
                 if result[partNbr][storeName]:
                     current_availibility[partNbr] = True
+                    last_availibility_timestamp = time.time()
 
             if not prev_availibility[partNbr] and current_availibility[partNbr]:
                 available_start[partNbr] = time.time()
@@ -77,15 +79,28 @@ while 1:
             if current_availibility[partNbr]:
                 fast_refresh = True
 
+        # Basic time
+        randTime = random.randint(15, 30)
+
+        # Sharp time
+        preSharpTimeRange = 60
+        afterSharpTimeRange = 6000
+        if time.time() % 1800 > (1800-preSharpTimeRange) or time.time() % 1800 < afterSharpTimeRange:
+            randTime = min(randTime, random.randint(2, 4))
+
+        # After availibility time
+        after_availibility_range = 180
+        deltaT = time.time() - last_availibility_timestamp
+        if deltaT < after_availibility_range:
+            max_after_avai_delay = 2
+            prop_value = (deltaT/after_availibility_range)*max_after_avai_delay
+            prop_value = 0.5 if prop_value < 0.5 else prop_value
+            randTime = min(randTime, prop_value)
+
+        # Fast refresh time
         if fast_refresh:
-            randTime = 0.5
-        else:
-            preSharpTimeRange = 60
-            afterSharpTimeRange = 480
-            if time.time() % 1800 > (1800-preSharpTimeRange) or time.time() % 1800 < afterSharpTimeRange:
-                randTime = random.randint(4, 8)
-            else:
-                randTime = random.randint(15, 30)
+            randTime=min(randTime, 0.5)
+
         print('  > Sleep For', randTime, 's')
         time.sleep(randTime)
 
